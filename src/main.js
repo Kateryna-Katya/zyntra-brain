@@ -2,11 +2,7 @@
 // чтобы GSAP правильно рассчитал высоту
 window.addEventListener("load", () => {
 
-    console.log("Page Loaded. Initializing Zyntra Core...");
-
-    // ------------------------------------------------
-    // 1. БЕЗОПАСНАЯ ПРОВЕРКА БИБЛИОТЕК
-    // ------------------------------------------------
+    // --- 1. ПРОВЕРКА БИБЛИОТЕК ---
     const isGsapLoaded = typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined";
     const isLenisLoaded = typeof Lenis !== "undefined";
 
@@ -18,9 +14,7 @@ window.addEventListener("load", () => {
     gsap.registerPlugin(ScrollTrigger);
     if (typeof lucide !== "undefined") lucide.createIcons();
 
-    // ------------------------------------------------
-    // 2. НАСТРОЙКА LENIS + GSAP (СВЯЗКА)
-    // ------------------------------------------------
+    // --- 2. НАСТРОЙКА LENIS + GSAP (СВЯЗКА) ---
     let lenis;
     if (isLenisLoaded) {
         lenis = new Lenis({
@@ -33,21 +27,21 @@ window.addEventListener("load", () => {
         // Связываем Lenis и ScrollTrigger
         lenis.on('scroll', ScrollTrigger.update);
 
-        gsap.ticker.add((time) => {
-            lenis.raf(time * 1000);
-        });
-
-        gsap.ticker.lagSmoothing(0);
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
         
-        console.log("Lenis Smooth Scroll: Active");
+        gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+        gsap.ticker.lagSmoothing(0);
     }
 
-    // ------------------------------------------------
-    // 3. АНИМАЦИИ (GSAP)
-    // ------------------------------------------------
+    // --- 3. АНИМАЦИИ (GSAP) ---
 
     // 3.1 HERO (Играет сразу, без скролла)
     const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    
     if (document.querySelector('.hero__title')) {
         heroTl.from(".hero__badge", { y: -20, opacity: 0, duration: 0.8 })
               .from(".hero__title", { y: 50, opacity: 0, duration: 1 }, "-=0.4")
@@ -56,21 +50,18 @@ window.addEventListener("load", () => {
               .from(".hero__visual", { scale: 0.8, opacity: 0, duration: 1.2, ease: "back.out(1.7)" }, "-=1");
     }
 
-    // 3.2 ЗАГОЛОВКИ СЕКЦИЙ (Простой триггер)
-    // Используем batch, чтобы не создавать 100 отдельных триггеров
+    // 3.2 ЗАГОЛОВКИ СЕКЦИЙ
     ScrollTrigger.batch(".section__title", {
         onEnter: batch => gsap.to(batch, { opacity: 1, y: 0, duration: 0.8, stagger: 0.15, overwrite: true }),
         start: "top 85%",
     });
-    // Устанавливаем начальное состояние через CSS или set, чтобы избежать мигания
     gsap.set(".section__title", { opacity: 0, y: 50 });
 
 
     // 3.3 ПРЕИМУЩЕСТВА (Benefits)
-    // Принудительно проверяем наличие элементов
     const benefits = document.querySelectorAll(".benefit-card");
     if (benefits.length > 0) {
-        gsap.set(benefits, { opacity: 0, y: 60 }); // Скрываем сразу
+        gsap.set(benefits, { opacity: 0, y: 60 });
         
         ScrollTrigger.batch(benefits, {
             start: "top 85%",
@@ -111,25 +102,23 @@ window.addEventListener("load", () => {
 
         mm.add("(min-width: 992px)", () => {
             const scrollAmount = casesTrack.scrollWidth - window.innerWidth;
-            
+
             gsap.to(casesTrack, {
                 x: -scrollAmount,
                 ease: "none",
                 scrollTrigger: {
-                    trigger: ".cases", // Триггер - сама секция
-                    pin: true,         // Закрепляем её
-                    scrub: 1,          // Связь со скроллом
-                    start: "top top",  // Начинаем, когда верх секции касается верха экрана
-                    end: () => `+=${casesTrack.scrollWidth}`, // Длина скролла
+                    trigger: ".cases",
+                    pin: true,
+                    scrub: 1,
+                    start: "top top",
+                    end: () => `+=${casesTrack.scrollWidth}`,
                     invalidateOnRefresh: true
                 }
             });
         });
     }
 
-    // ------------------------------------------------
-    // 4. UI И ФУНКЦИОНАЛ
-    // ------------------------------------------------
+    // --- 4. UI И ФУНКЦИОНАЛ ---
 
     // Год
     const yearSpan = document.getElementById('year');
@@ -166,6 +155,7 @@ window.addEventListener("load", () => {
     // Cookie Popup
     const cookiePopup = document.getElementById('cookiePopup');
     const acceptBtn = document.getElementById('acceptCookies');
+    
     if (cookiePopup && !localStorage.getItem('zyntra_cookies_accepted')) {
         setTimeout(() => cookiePopup.classList.add('show'), 2000);
     }
@@ -176,14 +166,15 @@ window.addEventListener("load", () => {
         });
     }
 
-    // Форма и Капча
+    // 5.2 Контактная форма (Добавлен чекбокс)
     const form = document.getElementById('contactForm');
-    const msgBox = document.getElementById('formMessage');
-    const cQ = document.getElementById('captchaQuestion');
-    const cA = document.getElementById('captchaAnswer');
+    const messageBox = document.getElementById('formMessage');
+    const consentCheckbox = document.getElementById('consent'); // <-- Чекбокс
+    const captchaQ = document.getElementById('captchaQuestion');
+    const captchaA = document.getElementById('captchaAnswer');
     
     let n1 = Math.floor(Math.random() * 10), n2 = Math.floor(Math.random() * 10);
-    if(cQ) cQ.textContent = `${n1} + ${n2} = ?`;
+    if (captchaQ) captchaQ.textContent = `${n1} + ${n2} = ?`;
 
     if (form) {
         form.addEventListener('submit', (e) => {
@@ -191,31 +182,58 @@ window.addEventListener("load", () => {
             let isValid = true;
             document.querySelectorAll('.form-group').forEach(g => g.classList.remove('error'));
 
-            // Валидация
-            const ph = form.querySelector('input[name="phone"]');
-            if(ph && !/^\d+$/.test(ph.value)) { ph.closest('.form-group').classList.add('error'); isValid = false; }
-            
-            if(cA && parseInt(cA.value) !== (n1 + n2)) {
-                cA.closest('.form-group').classList.add('error'); isValid = false;
-                n1 = Math.floor(Math.random()*10); n2 = Math.floor(Math.random()*10);
-                cQ.textContent = `${n1} + ${n2} = ?`; cA.value='';
+            // 1. Валидация телефона
+            const phone = form.querySelector('input[name="phone"]');
+            if (phone && !/^\d+$/.test(phone.value)) {
+                phone.closest('.form-group').classList.add('error');
+                isValid = false;
             }
 
-            const nm = form.querySelector('input[name="name"]');
-            if(nm && !nm.value.trim()) { nm.closest('.form-group').classList.add('error'); isValid = false; }
+            // 2. Валидация Капчи
+            if (captchaA && parseInt(captchaA.value) !== (n1 + n2)) {
+                captchaA.closest('.form-group').classList.add('error');
+                isValid = false;
+                n1 = Math.floor(Math.random() * 10);
+                n2 = Math.floor(Math.random() * 10);
+                if (captchaQ) captchaQ.textContent = `${n1} + ${n2} = ?`;
+                captchaA.value = '';
+            }
+
+            // 3. Валидация Имени
+            const name = form.querySelector('input[name="name"]');
+            if (name && !name.value.trim()) {
+                name.closest('.form-group').classList.add('error');
+                isValid = false;
+            }
+            
+            // 4. Валидация ЧЕКБОКСА (Новая логика)
+            if (consentCheckbox && !consentCheckbox.checked) {
+                consentCheckbox.closest('.checkbox-group').classList.add('error');
+                isValid = false;
+            }
 
             if (isValid) {
-                const btn = form.querySelector('button');
-                const orig = btn.innerText;
-                btn.innerText = 'Отправка...'; btn.style.opacity = '0.7';
+                const btn = form.querySelector('button[type="submit"]');
+                const btnText = btn.querySelector('.btn-text');
+                const originalText = btnText.textContent;
+                
+                btnText.textContent = 'Отправка...';
+                btn.style.opacity = '0.7';
+
                 setTimeout(() => {
                     form.reset();
-                    n1 = Math.floor(Math.random()*10); n2 = Math.floor(Math.random()*10);
-                    if(cQ) cQ.textContent = `${n1} + ${n2} = ?`;
-                    btn.innerText = orig; btn.style.opacity = '1';
-                    if(msgBox) {
-                        msgBox.textContent = 'Успешно!'; msgBox.classList.add('success');
-                        setTimeout(() => { msgBox.textContent=''; msgBox.classList.remove('success');}, 4000);
+                    // Сброс капчи
+                    n1 = Math.floor(Math.random() * 10);
+                    n2 = Math.floor(Math.random() * 10);
+                    if (captchaQ) captchaQ.textContent = `${n1} + ${n2} = ?`;
+                    
+                    btnText.textContent = originalText;
+                    btn.style.opacity = '1';
+                    
+                    if(messageBox) {
+                        messageBox.textContent = 'Успешно!'; 
+                        messageBox.classList.add('success');
+                        setTimeout(() => { messageBox.textContent=''; messageBox.classList.remove('success');}, 4000);
                     }
                 }, 1000);
             }
@@ -225,8 +243,5 @@ window.addEventListener("load", () => {
     // ------------------------------------------------
     // 5. ФИНАЛЬНЫЙ РЕФРЕШ
     // ------------------------------------------------
-    // Принудительно пересчитываем все позиции триггеров
     ScrollTrigger.refresh();
-    console.log("GSAP Triggers Refreshed");
-
 });
