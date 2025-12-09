@@ -1004,3 +1004,133 @@ img {
     background: var(--color-surface);
     border: 1px dashed var(--color-accent);
 }
+/* --- Legal Pages Styles --- */
+
+.legal-page {
+    padding-top: calc(var(--header-height) + 60px);
+    padding-bottom: 80px;
+    background: var(--color-bg);
+    min-height: 100vh;
+}
+
+.legal-content {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 24px;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .legal-content {
+        padding: 24px;
+        border: none;
+        background: transparent;
+    }
+}
+
+.legal-content h1 {
+    font-family: var(--font-head);
+    font-size: 2.5rem;
+    line-height: 1.1;
+    margin-bottom: 30px;
+    background: linear-gradient(90deg, #FFFFFF 0%, var(--color-accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.legal-intro {
+    font-size: 1.1rem;
+    color: var(--color-white);
+    margin-bottom: 40px;
+    line-height: 1.7;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 30px;
+}
+
+.legal-block {
+    margin-bottom: 40px;
+}
+
+.legal-block h2 {
+    font-family: var(--font-head);
+    font-size: 1.5rem;
+    color: var(--color-white);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.legal-block h2::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    background-color: var(--color-accent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--color-accent);
+}
+
+.legal-block p {
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.legal-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.legal-list li {
+    position: relative;
+    padding-left: 24px;
+    margin-bottom: 12px;
+    color: var(--color-text-muted);
+}
+
+.legal-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--color-accent);
+    font-weight: bold;
+}
+
+.legal-list strong {
+    color: var(--color-white);
+    font-weight: 600;
+}
+
+.link-accent {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+    font-family: var(--font-head);
+    border-bottom: 1px solid rgba(197, 248, 42, 0.3);
+    transition: var(--transition);
+}
+
+.link-accent:hover {
+    border-bottom-color: var(--color-accent);
+    text-shadow: 0 0 10px rgba(197, 248, 42, 0.5);
+}
+/* Styling for Ordered Lists in Legal Pages */
+.legal-ordered-list {
+    padding-left: 20px;
+    color: var(--color-text-muted);
+}
+
+.legal-ordered-list li {
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+.legal-ordered-list strong {
+    color: var(--color-white);
+}
